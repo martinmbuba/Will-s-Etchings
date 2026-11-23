@@ -1,4 +1,4 @@
-# Inkora Python backend
+# Will's Etchings Python backend
 
 FastAPI API prepared for Supabase.
 
