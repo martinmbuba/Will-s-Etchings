@@ -61,6 +61,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1)
   const designsPerPage = 6
   const searchInputRef = useRef(null)
+  const [authMode, setAuthMode] = useState(null)
+  const [authComplete, setAuthComplete] = useState(false)
 
   const filteredDesigns = designs
     .filter((design) => {
@@ -120,6 +122,17 @@ function App() {
     }
   }, [selectedDesign])
 
+  useEffect(() => {
+    if (!authMode) return
+
+    const handleAuthKeyDown = (event) => {
+      if (event.key === 'Escape') setAuthMode(null)
+    }
+
+    window.addEventListener('keydown', handleAuthKeyDown)
+    return () => window.removeEventListener('keydown', handleAuthKeyDown)
+  }, [authMode])
+
   return (
     <div className="site-shell">
       <header className="navbar">
@@ -146,7 +159,13 @@ function App() {
             document.querySelector('#designs')?.scrollIntoView({ behavior: 'smooth' })
             setTimeout(() => searchInputRef.current?.focus(), 500)
           }}><Search size={19} /></button>
-          <button className="icon-button account-button" aria-label="Account"><UserRound size={18} /></button>
+          <button className="account-button" aria-label="Open account menu" onClick={() => {
+            setAuthMode('login')
+            setAuthComplete(false)
+          }}>
+            <UserRound size={17} />
+            <span>Sign in</span>
+          </button>
           <button className="menu-button" aria-label="Toggle menu" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -357,6 +376,52 @@ function App() {
                 <h2>Your session request is ready.</h2>
                 <p>We have reserved a priority request for <strong>{selectedDesign.title}</strong>. Secure deposit payments will be available once checkout is connected.</p>
                 <button className="primary-button" onClick={closeBooking}>Done</button>
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {authMode && (
+        <div className="modal-backdrop auth-backdrop" role="presentation" onMouseDown={(event) => {
+          if (event.target === event.currentTarget) setAuthMode(null)
+        }}>
+          <section className="auth-modal" role="dialog" aria-modal="true" aria-label={authMode === 'login' ? 'Sign in' : 'Create account'}>
+            <button className="modal-close" onClick={() => setAuthMode(null)} aria-label="Close"><X size={20} /></button>
+            {!authComplete ? (
+              <>
+                <p className="eyebrow"><span /> {authMode === 'login' ? 'Welcome back' : 'Join the studio'}</p>
+                <h2>{authMode === 'login' ? 'Sign in to your account' : 'Create your account'}</h2>
+                <form className="auth-form" onSubmit={(event) => {
+                  event.preventDefault()
+                  setAuthComplete(true)
+                }}>
+                  {authMode === 'register' && (
+                    <label>Full name<input required type="text" placeholder="William Bright" /></label>
+                  )}
+                  <label>Email address<input required type="email" placeholder="you@example.com" /></label>
+                  <label>Password<input required type="password" minLength="6" placeholder="At least 6 characters" /></label>
+                  {authMode === 'register' && (
+                    <label className="auth-check"><input type="checkbox" required /> <span>I agree to studio booking terms.</span></label>
+                  )}
+                  <button className="primary-button auth-submit" type="submit">
+                    {authMode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={18} />
+                  </button>
+                </form>
+                <p className="auth-switch">
+                  {authMode === 'login' ? 'New to Will\'s Etchings?' : 'Already have an account?'}
+                  <button type="button" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>
+                    {authMode === 'login' ? 'Create account' : 'Sign in'}
+                  </button>
+                </p>
+              </>
+            ) : (
+              <div className="auth-success">
+                <div className="success-icon"><UserRound size={28} /></div>
+                <p className="eyebrow"><span /> Ready</p>
+                <h2>{authMode === 'login' ? 'You’re signed in.' : 'Your account is ready.'}</h2>
+                <p>Account access will be connected to Supabase authentication next.</p>
+                <button className="primary-button" onClick={() => setAuthMode(null)}>Continue</button>
               </div>
             )}
           </section>
