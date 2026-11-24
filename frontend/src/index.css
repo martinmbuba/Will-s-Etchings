@@ -234,6 +234,37 @@ footer > span { justify-self: end; color: #99978e; font-size: 11px; }
 
 .auth-success .primary-button { margin-top: 18px; }
 
+.register-button {
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 16px;
+  background: #7a55ca;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.signed-in-button {
+  background: #fff7fb;
+  border-color: #e7bdd2;
+  color: #a83d67;
+}
+
+.auth-error {
+  margin: 0;
+  border-radius: 10px;
+  background: #fff0f3;
+  color: #a72f4f;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+
+.auth-submit:disabled {
+  opacity: .7;
+  cursor: wait;
+}
+
 @media (max-width: 900px) {
   .navbar { height: 112px; padding: 0 20px; grid-template-columns: 1fr auto; }
   .nav-links { display: none; position: absolute; left: 20px; right: 20px; top: 112px; background: #f7f5ef; border: 1px solid #dedbd3; padding: 22px; flex-direction: column; }

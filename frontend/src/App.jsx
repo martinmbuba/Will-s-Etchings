@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { isSupabaseConfigured, supabase } from './lib/supabase'
 import {
   ArrowRight,
   CalendarDays,
@@ -63,6 +64,9 @@ function App() {
   const searchInputRef = useRef(null)
   const [authMode, setAuthMode] = useState(null)
   const [authComplete, setAuthComplete] = useState(false)
+  const [currentUser, setCurrentUser] = useState(null)
+  const [authLoading, setAuthLoading] = useState(false)
+  const [authError, setAuthError] = useState('')
 
   const filteredDesigns = designs
     .filter((design) => {
@@ -133,6 +137,60 @@ function App() {
     return () => window.removeEventListener('keydown', handleAuthKeyDown)
   }, [authMode])
 
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return
+
+    supabase.auth.getSession().then(({ data }) => {
+      setCurrentUser(data.session?.user ?? null)
+    })
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null)
+    })
+
+    return () => data.subscription.unsubscribe()
+  }, [])
+
+  const signOut = async () => {
+    if (supabase) await supabase.auth.signOut()
+    setAuthMode(null)
+  }
+
+  const submitAuth = async (event) => {
+    event.preventDefault()
+    setAuthError('')
+
+    if (!isSupabaseConfigured || !supabase) {
+      setAuthError('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.')
+      return
+    }
+
+    const form = new FormData(event.currentTarget)
+    const email = form.get('email')
+    const password = form.get('password')
+    const fullName = form.get('fullName')
+    setAuthLoading(true)
+
+    try {
+      if (authMode === 'register') {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName } },
+        })
+        if (error) throw error
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
+      }
+      setAuthComplete(true)
+    } catch (error) {
+      setAuthError(error.message || 'Unable to complete authentication.')
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
   return (
     <div className="site-shell">
       <header className="navbar">
@@ -159,13 +217,30 @@ function App() {
             document.querySelector('#designs')?.scrollIntoView({ behavior: 'smooth' })
             setTimeout(() => searchInputRef.current?.focus(), 500)
           }}><Search size={19} /></button>
-          <button className="account-button" aria-label="Open account menu" onClick={() => {
-            setAuthMode('login')
-            setAuthComplete(false)
-          }}>
-            <UserRound size={17} />
-            <span>Sign in</span>
-          </button>
+          {currentUser ? (
+            <button className="account-button signed-in-button" aria-label="Sign out" onClick={signOut}>
+              <UserRound size={17} />
+              <span>Sign out</span>
+            </button>
+          ) : (
+            <>
+              <button className="account-button" aria-label="Sign in" onClick={() => {
+                setAuthMode('login')
+                setAuthComplete(false)
+                setAuthError('')
+              }}>
+                <UserRound size={17} />
+                <span>Sign in</span>
+              </button>
+              <button className="register-button" aria-label="Create account" onClick={() => {
+                setAuthMode('register')
+                setAuthComplete(false)
+                setAuthError('')
+              }}>
+                Register
+              </button>
+            </>
+          )}
           <button className="menu-button" aria-label="Toggle menu" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -392,20 +467,18 @@ function App() {
               <>
                 <p className="eyebrow"><span /> {authMode === 'login' ? 'Welcome back' : 'Join the studio'}</p>
                 <h2>{authMode === 'login' ? 'Sign in to your account' : 'Create your account'}</h2>
-                <form className="auth-form" onSubmit={(event) => {
-                  event.preventDefault()
-                  setAuthComplete(true)
-                }}>
+                <form className="auth-form" onSubmit={submitAuth}>
                   {authMode === 'register' && (
-                    <label>Full name<input required type="text" placeholder="William Bright" /></label>
+                    <label>Full name<input name="fullName" required type="text" placeholder="William Bright" /></label>
                   )}
-                  <label>Email address<input required type="email" placeholder="you@example.com" /></label>
-                  <label>Password<input required type="password" minLength="6" placeholder="At least 6 characters" /></label>
+                  <label>Email address<input name="email" required type="email" placeholder="you@example.com" /></label>
+                  <label>Password<input name="password" required type="password" minLength="6" placeholder="At least 6 characters" /></label>
                   {authMode === 'register' && (
                     <label className="auth-check"><input type="checkbox" required /> <span>I agree to studio booking terms.</span></label>
                   )}
-                  <button className="primary-button auth-submit" type="submit">
-                    {authMode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={18} />
+                  {authError && <p className="auth-error" role="alert">{authError}</p>}
+                  <button className="primary-button auth-submit" type="submit" disabled={authLoading}>
+                    {authLoading ? 'Please wait…' : authMode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={18} />
                   </button>
                 </form>
                 <p className="auth-switch">
@@ -420,7 +493,7 @@ function App() {
                 <div className="success-icon"><UserRound size={28} /></div>
                 <p className="eyebrow"><span /> Ready</p>
                 <h2>{authMode === 'login' ? 'You’re signed in.' : 'Your account is ready.'}</h2>
-                <p>Account access will be connected to Supabase authentication next.</p>
+                <p>{authMode === 'login' ? 'Welcome back to Will\'s Etchings.' : 'Check your email if confirmation is required before signing in.'}</p>
                 <button className="primary-button" onClick={() => setAuthMode(null)}>Continue</button>
               </div>
             )}
