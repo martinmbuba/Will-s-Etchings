@@ -31,7 +31,7 @@ app.add_middleware(
 
 
 class BookingRequest(BaseModel):
-    design_id: str
+    design_id: int
     full_name: str = Field(min_length=2, max_length=120)
     email: EmailStr
     preferred_date: date
@@ -63,14 +63,21 @@ def get_design(design_id: str):
     return result.data
 
 
-@app.post("/bookings", response_model=BookingResponse, status_code=201)
+@app.post('/bookings', response_model=BookingResponse, status_code=201)
 def create_booking(payload: BookingRequest):
-    design = supabase.table("tattoo_designs").select("id").eq("id", payload.design_id).eq("available", True).maybe_single().execute()
+    design = (
+        supabase.table("tattoo_designs")
+        .select("id")
+        .eq("catalog_id", payload.design_id)
+        .eq("available", True)
+        .maybe_single()
+        .execute()
+    )
     if not design.data:
         raise HTTPException(status_code=404, detail="Design not found or unavailable")
 
     result = supabase.table("booking_requests").insert({
-        "design_id": payload.design_id,
+        "design_id": design.data["id"] if isinstance(design.data, dict) else design.data,
         "full_name": payload.full_name,
         "email": str(payload.email),
         "preferred_date": payload.preferred_date.isoformat(),

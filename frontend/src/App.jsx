@@ -69,6 +69,9 @@ function App() {
   const [authLoading, setAuthLoading] = useState(false)
   const [authError, setAuthError] = useState('')
 
+  const [bookingLoading, setBookingLoading] = useState(false)
+  const [bookingError, setBookingError] = useState('')
+
   const filteredDesigns = designs
     .filter((design) => {
       const matchesCategory = category === 'All designs' || design.style === category
@@ -99,9 +102,38 @@ function App() {
     setBookingComplete(false)
   }
 
-  const submitBooking = (event) => {
+  const submitBooking = async (event) => {
     event.preventDefault()
-    setBookingComplete(true)
+    setBookingLoading(true)
+    setBookingError('')
+
+    const form = new FormData(event.currentTarget)
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          design_id: selectedDesign.id,
+          full_name: form.get('fullName'),
+          email: form.get('email'),
+          preferred_date: form.get('preferredDate'),
+          placement: form.get('placement'),
+          notes: form.get('notes') || null,
+        }),
+      })
+
+      if (!response.ok) {
+        const detail = await response.json().catch(() => null)
+        throw new Error(detail?.detail || 'Could not create the booking.')
+      }
+
+      setBookingComplete(true)
+    } catch (error) {
+      setBookingError(error.message || 'Could not create the booking.')
+    } finally {
+      setBookingLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -445,15 +477,18 @@ function App() {
                 </div>
                 <form onSubmit={submitBooking}>
                   <div className="form-row">
-                    <label>Full name<input required placeholder="Your name" /></label>
-                    <label>Email address<input required type="email" placeholder="you@example.com" /></label>
+                    <label>Full name<input name="fullName" required placeholder="Your name" /></label>
+                    <label>Email address<input name="email" required type="email" placeholder="you@example.com" /></label>
                   </div>
                   <div className="form-row">
-                    <label>Preferred date<input required type="date" /></label>
-                    <label>Placement<select required defaultValue=""><option value="" disabled>Select area</option><option>Forearm</option><option>Upper arm</option><option>Back</option><option>Chest</option><option>Leg</option><option>Other</option></select></label>
+                    <label>Preferred date<input name="preferredDate" required type="date" /></label>
+                    <label>Placement<select name="placement" required defaultValue=""><option value="" disabled>Select area</option><option>Forearm</option><option>Upper arm</option><option>Back</option><option>Chest</option><option>Leg</option><option>Other</option></select></label>
                   </div>
-                  <label>Notes for the artist<textarea placeholder="Sizing, placement details, or anything we should know" rows="3" /></label>
-                  <button className="primary-button booking-button" type="submit">Continue to deposit <ArrowRight size={18} /></button>
+                  <label>Notes for the artist<textarea name="notes" placeholder="Sizing, placement details, or anything we should know" rows="3" /></label>
+                  <button className="primary-button booking-button" type="submit" disabled={bookingLoading}>
+                    {bookingLoading ? 'Please wait…' : 'Continue to deposit'} <ArrowRight size={18} />
+                  </button>
+                  {bookingError && <p className="booking-error" role="alert">{bookingError}</p>}
                 </form>
               </>
             ) : (
