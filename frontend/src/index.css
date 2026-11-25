@@ -32,8 +32,13 @@ img { display: block; max-width: 100%; }
 .nav-links a:hover { opacity: .55; }
 .nav-actions { justify-self: end; display: flex; align-items: center; gap: 8px; }
 .icon-button, .menu-button { width: 40px; height: 40px; border: 0; background: transparent; display: grid; place-items: center; color: #25241f; border-radius: 50%; }
-.account-button { width: 40px; padding: 0; justify-content: center; }
+.account-button {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+}
 .account-button span { display: none; }
+.register-button { height: 40px; padding: 0 11px; }
 .menu-button { display: none; }
 
 .hero-section { width: 100%; max-width: none; margin: 0; padding: 36px 48px 54px; display: grid; grid-template-columns: 51% 49%; align-items: center; }
@@ -238,7 +243,7 @@ footer > span { justify-self: end; color: #99978e; font-size: 11px; }
   height: 40px;
   border: 0;
   border-radius: 999px;
-  padding: 0 16px;
+  padding: 0 11px;
   background: #7a55ca;
   color: white;
   font-size: 12px;
@@ -290,63 +295,16 @@ footer > span { justify-self: end; color: #99978e; font-size: 11px; }
 }
 
 @media (max-width: 600px) {
-  .brand { letter-spacing: 3px; }
-  .hero-section { padding-top: 38px; }
-  .hero-copy h1 { letter-spacing: -3px; }
-  .hero-description { font-size: 15px; }
-  .hero-actions { align-items: flex-start; flex-direction: column; gap: 12px; }
-  .hero-art { height: 390px; }
-  .hero-image-wrap { width: 92%; height: 350px; }
-  .hero-card { width: 210px; height: 95px; }
-  .orbit-label { display: none; }
-  .trust-strip { min-height: 180px; }
-  .section-heading { align-items: flex-start; flex-direction: column; gap: 25px; }
-  .search-box { width: 100%; }
-  .filter-row { align-items: flex-end; }
-  .filters { flex-wrap: nowrap; max-width: calc(100vw - 100px); overflow-x: auto; padding-bottom: 5px; }
-  .filter { white-space: nowrap; }
-  .sort-button { flex-shrink: 0; }
-  .design-grid { grid-template-columns: 1fr; }
-  .design-image { height: 420px; }
-  .view-design { opacity: 1; transform: none; }
-  .process-grid { grid-template-columns: 1fr; }
-  .process-grid div, .process-grid div:not(:first-child) { border-right: 0; border-bottom: 1px solid #55544e; padding: 24px 0; }
-  .process-grid h3 { margin-top: 30px; }
-  .visit-section { grid-template-columns: 1fr; }
-  .visit-section .outline-button { grid-column: auto; }
-  footer { height: 150px; grid-template-columns: 1fr auto; }
-  footer p { display: none; }
-  .booking-modal { padding: 28px 18px 18px; }
-  .booking-summary { grid-template-columns: 100px 1fr; }
-  .booking-summary img { width: 100px; height: 110px; }
-  .booking-summary h2 { font-size: 21px; }
-  .form-row { grid-template-columns: 1fr; }
+  .navbar { padding: 0 12px; }
+  .ceo-profile > span { display: none; }
+  .brand-name { font-size: 12px; letter-spacing: 2px; }
+  .brand-mark { width: 30px; height: 30px; }
+  .nav-actions { gap: 4px; max-width: 150px; }
+  .icon-button { width: 36px; }
+  .register-button { height: 36px; padding: 0 8px; font-size: 11px; }
 }
 
 @media (min-width: 901px) {
-  .hero-section { min-height: 520px; padding-top: 24px; padding-bottom: 32px; }
-  .hero-art { height: 450px; }
-  .hero-image-wrap { height: 410px; }
-  .hero-copy h1 { font-size: clamp(58px, 5.4vw, 82px); }
-  .hero-description { margin-top: 22px; margin-bottom: 24px; }
-  .design-section { padding-top: 78px; padding-bottom: 88px; }
-}
-
-@media (min-width: 901px) and (max-width: 1100px) {
-  .navbar,
-  .hero-section,
-  .trust-strip,
-  .design-section,
-  .visit-section,
-  footer { width: 100%; padding-left: 24px; padding-right: 24px; }
-  .nav-links { gap: 18px; }
-  .hero-copy h1 { font-size: clamp(48px, 6vw, 64px); }
-  .hero-image-wrap { width: 86%; }
-  .design-grid { gap: 24px 14px; }
-  .design-image { height: 330px; }
-}
-
-@media (min-width: 1101px) {
   .hero-section { grid-template-columns: 48% 52%; }
   .design-grid { grid-template-columns: repeat(4, 1fr); }
   .design-image { height: 360px; }

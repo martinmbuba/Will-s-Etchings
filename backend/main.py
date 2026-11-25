@@ -11,13 +11,14 @@ from supabase import create_client
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY")
+SUPABASE_JWKS_URL = os.getenv("SUPABASE_JWKS_URL")
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
-if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
-    raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set")
+if not SUPABASE_URL or not SUPABASE_SECRET_KEY or not SUPABASE_JWKS_URL:
+    raise RuntimeError("SUPABASE_URL, SUPABASE_SECRET_KEY, SUPABASE_JWKS_URL, and FRONTEND_ORIGIN must be set")
 
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+supabase = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
 
 app = FastAPI(title="Inkora API", version="1.0.0")
 app.add_middleware(
