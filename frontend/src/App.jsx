@@ -65,6 +65,7 @@ function App() {
   const [authMode, setAuthMode] = useState(null)
   const [authComplete, setAuthComplete] = useState(false)
   const [currentUser, setCurrentUser] = useState(null)
+  const [currentProfile, setCurrentProfile] = useState(null)
   const [authLoading, setAuthLoading] = useState(false)
   const [authError, setAuthError] = useState('')
 
@@ -151,6 +152,17 @@ function App() {
     return () => data.subscription.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    if (!supabase || !currentUser) return
+
+    supabase
+      .from('profiles')
+      .select('full_name, email')
+      .eq('id', currentUser.id)
+      .maybeSingle()
+      .then(({ data }) => setCurrentProfile(data))
+  }, [currentUser])
+
   const signOut = async () => {
     if (supabase) await supabase.auth.signOut()
     setAuthMode(null)
@@ -161,7 +173,7 @@ function App() {
     setAuthError('')
 
     if (!isSupabaseConfigured || !supabase) {
-      setAuthError('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.')
+      setAuthError('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.')
       return
     }
 
@@ -220,7 +232,7 @@ function App() {
           {currentUser ? (
             <button className="account-button signed-in-button" aria-label="Sign out" onClick={signOut}>
               <UserRound size={17} />
-              <span>Sign out</span>
+              <span>{currentProfile?.full_name || currentUser.email || 'Sign out'}</span>
             </button>
           ) : (
             <>
