@@ -32,6 +32,21 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+alter table public.tattoo_designs add column if not exists catalog_id integer;
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'tattoo_designs_catalog_id_key'
+      and conrelid = 'public.tattoo_designs'::regclass
+  ) then
+    alter table public.tattoo_designs
+      add constraint tattoo_designs_catalog_id_key unique (catalog_id);
+  end if;
+end
+$$;
+
 alter table public.tattoo_designs enable row level security;
 alter table public.booking_requests enable row level security;
 alter table public.profiles enable row level security;

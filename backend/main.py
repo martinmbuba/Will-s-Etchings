@@ -13,7 +13,11 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY")
 SUPABASE_JWKS_URL = os.getenv("SUPABASE_JWKS_URL")
-FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+FRONTEND_ORIGINS = os.getenv(
+    "FRONTEND_ORIGINS",
+    os.getenv("FRONTEND_ORIGIN", "http://localhost:5173"),
+).split(",")
+FRONTEND_ORIGINS = [origin.strip().rstrip("/") for origin in FRONTEND_ORIGINS if origin.strip()]
 
 if not SUPABASE_URL or not SUPABASE_SECRET_KEY or not SUPABASE_JWKS_URL:
     raise RuntimeError("SUPABASE_URL, SUPABASE_SECRET_KEY, SUPABASE_JWKS_URL, and FRONTEND_ORIGIN must be set")
@@ -23,7 +27,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
 app = FastAPI(title="Inkora API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN],
+    allow_origins=FRONTEND_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
